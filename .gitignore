@@ -33,3 +33,4 @@
 
 # added by Devin, for vscode
 build/
+.vscode
