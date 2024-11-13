@@ -4,7 +4,30 @@
 
 namespace wxy
 {
-	template<typename T, typename Container = std::vector<T>>//默认构建大堆
+	/* less 和 greater 都是按照STL 的逻辑来的, less 用于构建大堆, greater 用于构建大堆
+	 * less 升序, greater 降序
+	 * 有点不符合直觉...
+	 */
+	template<typename T>
+	struct less//仿函数
+	{
+		bool operator()(const T left, const T right)const
+		{
+			return left > right;
+		}
+	};
+
+	template<typename T>
+	struct greater//仿函数
+	{
+		bool operator()(const T left, const T right)const
+		{
+			return left < right;
+		}
+	};
+
+	//class PriorityQueue
+	template<typename T, typename Container = std::vector<T>, typename Compare = less<T>>//默认构建大堆
 	class PriorityQueue
 	{
 	public:
@@ -20,46 +43,47 @@ namespace wxy
 		Container _con;
 	};
 
-	template<typename T, typename Container>
-	void PriorityQueue<T, Container>::Push(const T &value)
+	template<typename T, typename Container, typename Compare>
+	void PriorityQueue<T, Container, Compare>::Push(const T &value)
 	{
 		_con.push_back(value);
 		AdjustToUp(_con.size() - 1);
 	}
 
-	template<typename T, typename Container>
-	void  PriorityQueue<T, Container>::Pop()
+	template<typename T, typename Container, typename Compare>
+	void  PriorityQueue<T, Container, Compare>::Pop()
 	{
 		std::swap(_con[0], _con[_con.size() - 1]);
 		_con.pop_back();
 		AdjustToDown(0);
 	}
 
-	template<typename T, typename Container>
-	size_t PriorityQueue<T, Container>::Size()const
+	template<typename T, typename Container, typename Compare>
+	size_t PriorityQueue<T, Container, Compare>::Size()const
 	{
 		return _con.size();
 	}
 
-	template<typename T, typename Container>
-	const T& PriorityQueue<T, Container>::Top()const
+	template<typename T, typename Container, typename Compare>
+	const T& PriorityQueue<T, Container, Compare>::Top()const
 	{
 		return _con.front();
 	}
 
-	template<typename T, typename Container>
-	bool PriorityQueue<T, Container>::Empty()const
+	template<typename T, typename Container, typename Compare>
+	bool PriorityQueue<T, Container, Compare>::Empty()const
 	{
 		return _con.empty();
 	}
 
-	template<typename T, typename Container>
-	void PriorityQueue<T, Container>::AdjustToUp(size_t child)
+	template<typename T, typename Container, typename Compare>
+	void PriorityQueue<T, Container, Compare>::AdjustToUp(size_t child)
 	{
+		Compare cmp;
 		while(child > 0)
 		{
 			size_t parent = (child - 1) / 2;
-			if(_con[child] > _con[parent])
+			if(cmp(_con[child], _con[parent]))
 				std::swap(_con[child], _con[parent]);
 			else//上面的数据更大
 				break;
@@ -67,17 +91,18 @@ namespace wxy
 		}
 	}
 
-	template<typename T, typename Container>
-	void PriorityQueue<T, Container>::AdjustToDown(size_t parent)
+	template<typename T, typename Container, typename Compare>
+	void PriorityQueue<T, Container, Compare>::AdjustToDown(size_t parent)
 	{
+		Compare cmp;
 		size_t size = _con.size();
 		size_t maxChild = 2 * parent + 1;
 		while(maxChild < size)
 		{
 			
-			if(maxChild + 1 < size && _con[maxChild + 1] > _con[maxChild])
+			if(maxChild + 1 < size && cmp(_con[maxChild + 1],  _con[maxChild]))
 				++maxChild;
-			if(_con[maxChild] > _con[parent])
+			if(cmp(_con[maxChild], _con[parent]))
 				std::swap(_con[maxChild], _con[parent]);
 			else//下面的数据更小
 				break;

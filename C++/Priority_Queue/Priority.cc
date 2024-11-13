@@ -2,7 +2,7 @@
 #include <iostream>
 using namespace wxy;
 
-void Print(PriorityQueue<int, std::vector<int>> pq)
+void Print(PriorityQueue<int, std::vector<int>,  greater<int>> pq)
 {
 	//std::cout << *list.begin() <<std::endl;
 	while(!pq.Empty())
@@ -14,7 +14,7 @@ void Print(PriorityQueue<int, std::vector<int>> pq)
 }
 int main()
 {
-	PriorityQueue<int, std::vector<int>> pq;
+	PriorityQueue<int, std::vector<int>, greater<int>> pq;
 	pq.Push(1);
 	pq.Push(3);
 	pq.Push(5);
