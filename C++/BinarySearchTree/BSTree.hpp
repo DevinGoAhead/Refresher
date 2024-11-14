@@ -3,33 +3,34 @@
 
 namespace wxy
 {
-	template <typename K>
+	template <typename K, typename V>
 	struct __BSTreeNode
 	{
 	public:
-		__BSTreeNode(const K &key = K())
-			: _key(key), _left(nullptr), _right(nullptr)
+		__BSTreeNode(const K &key = K(), const V &val = V())
+			: _key(key), _val(val), _left(nullptr), _right(nullptr)
 		{
 		}
 
 	public:
 		K _key;
-		__BSTreeNode<K> *_left;
-		__BSTreeNode<K> *_right;
+		V _val;
+		__BSTreeNode<K, V> *_left;
+		__BSTreeNode<K, V> *_right;
 	};
 
-	template <typename K>
+	template <typename K, typename V>
 	class BSTree
 	{
 	public:
-		using Node = __BSTreeNode<K>;
+		using Node = __BSTreeNode<K, V>;
 
 	public:
 		BSTree()
 			: _root(nullptr)
 		{
 		}
-		bool Insert(const K &key);
+		bool Insert(const K &key, const V & val);
 		bool Erase(const K &key);
 		Node* Find(const K &key);
 		void PrintInOrder()const;
@@ -40,12 +41,12 @@ namespace wxy
 		Node *_root;
 	};
 
-	template <typename K>
-	bool BSTree<K>::Insert(const K &key)
+	template <typename K, typename V>
+	bool BSTree<K, V>::Insert(const K &key, const V & val)
 	{
 		if (_root == nullptr) // 空树
 		{
-			_root = new Node(key);
+			_root = new Node(key, val);
 			return true;
 		}
 		else
@@ -72,13 +73,13 @@ namespace wxy
 			 * 但是不确定最后是在if 中结束的(key  < prev._key )
 			 * 还是 if else 中结束的(key  > prev._key )
 			 */
-			key < prev->_key ? prev->_left = new Node(key) : prev->_right = new Node(key);
+			key < prev->_key ? prev->_left = new Node(key, val) : prev->_right = new Node(key, val);
 			return true;
 		}
 	}
 
-	template <typename K>
-	bool BSTree<K>::Erase(const K &key)
+	template <typename K, typename V>
+	bool BSTree<K, V>::Erase(const K &key)
 	{
 		if (_root == nullptr)
 			return false;
@@ -157,6 +158,7 @@ namespace wxy
 					if(cur == prev->_right) 
 					{
 						delNode->_key = cur->_key;
+						delNode->_val = cur->_val;
 						prev->_right = cur->_left; // 无论cur 是否有左子节点, 均适用
 						delete cur;
 						return true;
@@ -164,6 +166,7 @@ namespace wxy
 					else // 没进入循环, 左树不存在最大值(本质是 delNode 的左子节点不存在右树)
 					{
 						delNode->_key = cur->_key;
+						delNode->_val = cur->_val;
 						prev->_left = cur->_left;
 						delete cur;
 						return true;
@@ -173,8 +176,8 @@ namespace wxy
 		}
 	}
 
-	template <typename K>
-	typename BSTree<K>::Node* BSTree<K>::Find(const K &key)
+	template <typename K, typename V>
+	typename BSTree<K, V>::Node* BSTree<K, V>::Find(const K &key)
 	{
 		//先找到这个值
 		Node *cur = _root, *prev = _root;
@@ -198,25 +201,25 @@ namespace wxy
 		return nullptr;
 	}
 
-	template <typename K>
-	void BSTree<K>::__PrintInOrder(Node* node)const
+	template <typename K, typename V>
+	void BSTree<K, V>::__PrintInOrder(Node* node)const
 	{
 		if(!node)
 			return;
 		__PrintInOrder(node->_left);
-		std::cout << node->_key << " ";
+		std::cout << "("<< node->_key  << ", " << node->_val << ")" << " ";
 		__PrintInOrder(node->_right);
 	}
 
-	template <typename K>
-	void BSTree<K>::PrintInOrder()const
+	template <typename K, typename V>
+	void BSTree<K, V>::PrintInOrder()const
 	{
 		__PrintInOrder(_root);
 		std::cout << std::endl;
 	}
 
-	template <typename K>
-	void BSTree<K>::PrintLevelOrder()const
+	template <typename K, typename V>
+	void BSTree<K, V>::PrintLevelOrder()const
 	{
 		if(_root == nullptr)
 		{
@@ -238,8 +241,7 @@ namespace wxy
 				qu.push(node->_right);
 			// else
 			// 	qu.push(nullptr);
-
-			std::cout << qu.front()->_key << " ";
+			std::cout << "(" << qu.front()->_key << ", " << qu.front()->_val << ")" << " ";
 			qu.pop();
 			node = qu.front();
 			while(!node)
