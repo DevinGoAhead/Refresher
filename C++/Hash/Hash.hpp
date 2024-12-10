@@ -112,7 +112,7 @@ namespace wxy
 			for(size_t i_probe = 0; i_probe < curCapacity; ++i_probe)
 			{
 				size_t iHash = (posHash + i_probe * i_probe) % curCapacity; // 二次探测
-				if(_table[i_probe]._state != Exist)
+				if(_table[iHash]._state != Exist)
 				{
 					_table[iHash]._kv = kv;
 					_table[iHash]._state = Exist;
