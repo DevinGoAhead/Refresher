@@ -1,11 +1,10 @@
 #pragma once
 
 #include <iostream>
-// #include <queue>
+#include <string>
 #include <vector>
 #include <utility>
 #include <cassert>
-// #include <cstdlib>
 
 namespace wxy
 {	
@@ -16,6 +15,22 @@ namespace wxy
 		{
 			//return key % wxy::ch::_capacity;// 实现起来挺麻烦
 			return key; // 这里做简化处理, 形式上使用哈希函数, 但实际不做任何处理
+		}
+	};
+
+	template<>
+	struct  HashFunc_1<std::string> // HashFunc_1 模板参数string特化
+	{
+		size_t operator()(const std::string& str)
+		{
+			size_t val = 0;
+			size_t size = str.size();
+			for(size_t i = 0; i < size; ++i)
+			{
+				val *= 131;
+				val += str[i];
+			} 
+			return val;
 		}
 	};
 
