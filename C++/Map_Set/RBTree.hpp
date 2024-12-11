@@ -379,7 +379,11 @@ namespace wxy
 				}
 			}
 		}
-		// return std::make_pair(iterator(nullptr), false); //不可能到这里
+		
+		//虽然我判断代码不可能到这里
+		// 但是编译器无法判断这一点, 编译器会认为某些情况下没有返回值
+		// 为了避免这一点, 这一句还得加上
+		return std::make_pair(iterator(nullptr), false); 
 	}
 
 	template <typename K, typename T, typename KofT>
