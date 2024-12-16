@@ -11,6 +11,9 @@ const size_t numCMDStr = 1024; // 指令参数所包含字符的最大值
 
 int main()
 {
+	int exitSignal; // 保存上一次命令的退出信号
+	int exitCode; // 保存上一次命令的退出码
+	
 	while(1)// 循环执行指令
 	{
 		printf("UserName@MyShell: "); //指令前的用户提示
@@ -34,7 +37,34 @@ int main()
 		{
 			myArgv[i++] = token;
 		}
+
+		// 设置 ls 自动开启语法高亮
+		if(strcmp(myArgv[0], "ls") == 0 && i < (numCMD - 1))// 不能超过 numCMD 个命令
+		{
+			myArgv[i++] = "--color=auto";
+		}
+
 		myArgv[i] = token; // 最后一个指针需要为 NULL, 作为结束标记
+
+		// 修正 内建命令 cd
+		if(myArgv[0] != NULL && strcmp(myArgv[0], "cd") == 0 && myArgv[1] != NULL)
+		{
+			chdir(myArgv[1]); // 更改cwd
+			continue;// 不需要子进程调用程序执行了
+		}
+
+		// 修正 内建命令 echo
+		if(myArgv[0] != NULL && strcmp(myArgv[0], "echo") == 0)
+		{
+			if(myArgv[1] != NULL && strcmp(myArgv[1], "$?") == 0)
+			{
+				printf("%d, %d\n", exitSignal,  exitCode);
+			}
+			else // 普通变量
+			{
+				printf("%s\n", myArgv[1]);
+			}
+		}
 
 		// 3. 调用替换程序, 执行解析的指令
 		pid_t id = fork();
@@ -47,10 +77,14 @@ int main()
 		}
 
 		// 父进程, 这里仅负责回收子进程
-		printf("%d\n", id); // 测试
+		//printf("%d\n", id); // 测试
 		int status;
 		waitpid(id, &status, 0);
-		printf("exit success: exit signal(%d), exit code(%d)", status & 0x007F, (status >> 8) & 0x00FF);
+		
+		exitSignal =  status & 0x007F;
+		exitCode = (status >> 8) & 0x00FF;
+
+		printf("exit success: exit signal(%d), exit code(%d)",exitSignal, exitCode);
 		printf("\n");
 	}
 }
