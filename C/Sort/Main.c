@@ -40,10 +40,18 @@ void test4(int arr[], int szArr)//选择排序
 
 void test5(int arr[], int szArr)//交换排序
 {
-	printf("SelectSort: ");
-	SelectSort(arr, szArr);
+	printf("RecursiveQuickSort: ");
+	//RecursiveQuickSort(arr, 0, szArr - 1);
+	NonRecursiveQuickSort(arr, 0, szArr - 1);
 	Print(arr, szArr);
 }
+
+// void test5(int arr[], int szArr)//交换排序
+// {
+// 	printf("SelectSort: ");
+// 	SelectSort(arr, szArr);
+// 	Print(arr, szArr);
+// }
 
 int main()
 {
@@ -56,6 +64,7 @@ int main()
 	//test1(arr, sz);//直接插入发排序
 	//test2(arr, sz);//希尔排序1
 	//test3(arr, sz);//希尔排序2
-	test4(arr, sz);//选择排序
+	//test4(arr, sz);//选择排序
+	test5(arr, sz);//快速排序-递归
 
 }
