@@ -1,6 +1,6 @@
 #pragma once
 #include "Global.h"
-#include "Conduit.hpp"
+#include "Pipe.hpp"
 
 #include <random>
 #include <optional>
@@ -64,7 +64,7 @@ public:
 
 			// 以下属于父进程
 			close(fd[0]);
-			_conduits.emplace_back(fd[1], retFork);
+			_pipes.emplace_back(fd[1], retFork);
 			_fdWRs.emplace_back(fd[1]);
 		}
 	}
@@ -80,14 +80,14 @@ public:
 			return;
 		}
 
-		size_t subProcNum = _conduits.size();
+		size_t subProcNum = _pipes.size();
 		if(subProcNum == 0)
 		{
 			std::cout << "None proc!" << std::endl;
 			return;
 		}
 		std::uniform_int_distribution<> distribTask(0, taskNum - 1); //随机数的范围 [0,  taskNum - 1]
-		std::uniform_int_distribution<> distribConduit(0, subProcNum - 1); //随机数的范围 [0, subProcNum - 1]
+		std::uniform_int_distribution<> distribPipe(0, subProcNum - 1); //随机数的范围 [0, subProcNum - 1]
 
 		bool flag = taskCount == 0 ? false : true;
 		while(true)
@@ -98,12 +98,12 @@ public:
 			}
 
 			uint taskIndex = distribTask(_gen); // 一个随机数, 用于表示要执行的任务的索引
-			uint conduitIndex = distribConduit(_gen); //  一个随机数, 用于表示传递任务的管道索引,间接确定要执行任务的子进程
-			//std::cout <<  taskIndex << conduitIndex << std::endl;
+			uint pipeIndex = distribPipe(_gen); //  一个随机数, 用于表示传递任务的管道索引,间接确定要执行任务的子进程
+			//std::cout <<  taskIndex << pipeIndex << std::endl;
 
-			std::cout << "Send Task[" << taskIndex << "] to Conduit | " << _conduits[conduitIndex].GetConduitName();
+			std::cout << "Send Task[" << taskIndex << "] to pipe | " << _pipes[pipeIndex].GetName();
 			fflush(stdout);
-			int ret = write(_conduits[conduitIndex].GetfdWR(), &taskIndex, sizeof(taskIndex)); // 将任务索引, 写入管道
+			int ret = write(_pipes[pipeIndex].GetfdWR(), &taskIndex, sizeof(taskIndex)); // 将任务索引, 写入管道
 			if(ret == -1) {perror("failed to write");}
 			sleep(1);
 		}
@@ -114,15 +114,15 @@ public:
 
 	~ProcPool()
 	{
-		for(const auto& conduit : _conduits) 
+		for(const auto& pipe : _pipes) 
 		{
-			std::cout << "Proc" << conduit.GetSubID() << " wait succeed..."<<std::endl;
-			waitpid( conduit.GetSubID(), nullptr, 0);// 简单回收, 阻塞等待, 不获取退出信息
+			std::cout << "Proc" << pipe.GetSubID() << " wait succeed..."<<std::endl;
+			waitpid( pipe.GetSubID(), nullptr, 0);// 简单回收, 阻塞等待, 不获取退出信息
 		}
 	}
 private:
 	std::mt19937 _gen; //  Mersenne Twister 引擎, 用于生成随机数
 	std::vector<std::function<void(void)>> _tasks;
-	std::vector<Conduit> _conduits;
+	std::vector<Pipe> _pipes;
 	std::vector<int> _fdWRs; // 存储的是主进程 指向管道文件的写端 的 文件描述符, 子进程将会继承, 在子进程中需要关闭(不关闭, 影响也不大)
 };

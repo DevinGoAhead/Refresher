@@ -2,16 +2,16 @@
 
 #include "Global.h"
 
-class Conduit
+class Pipe
 {
 public:
-	Conduit(int fdWR, int SubID) : _fdWR(fdWR), _subID(SubID)
+	Pipe(int fdWR, int SubID) : _fdWR(fdWR), _subID(SubID)
 	{
 		snprintf(_name, sizeof(_name) - 1, "SubProcID: %d, Writefd: %d\n", SubID, _fdWR);
 	}
 
 	int GetfdWR()const {return _fdWR;}
-	const char* GetConduitName()const {return _name;}
+	const char* GetName()const {return _name;}
 	pid_t GetSubID()const {return _subID;}
 private:
 	int _fdWR; // 管道写端文件描述符

@@ -4,4 +4,4 @@ project(ProcPool)
 set(CMAKE_CXX_STANDARD 17)
 
 add_compile_options(-Wall -g)
-add_executable(ProcPool ProcPool.hpp Tasks.hpp Conduit.hpp Global.h Main.cc)
+add_executable(ProcPool ProcPool.hpp Tasks.hpp Pipe.hpp Global.h Main.cc)
