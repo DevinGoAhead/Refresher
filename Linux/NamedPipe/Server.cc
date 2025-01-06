@@ -45,8 +45,7 @@ int main()
 		}
 		else
 		{
-
-			buffer[size] = '\0'; // 添加一个 \0, 便于c c++ 函数使用
+			buffer[size - 1] == '\n' ? buffer[size - 1] = '\0' : buffer[size] = '\0';// 添加一个 \0, 便于c c++ 函数使用
 			if(strlen(buffer) == 0) {continue;} // 如果空消息
 
 			std::cout << "Server Read Message: " << buffer << std::endl;
