@@ -4,13 +4,14 @@
 #include <tuple>
 
 #include <unistd.h>
+#include <thread>
 
 using namespace wxy;
 
 int cntTickets = 10000;
 const int cntThread = 5;
 
-void* GetTickets(Mutex mutex, pthread_t tid, unsigned int index)
+void* GetTickets(Mutex mutex, uint index)
 {
     while(1)
     {
@@ -23,7 +24,7 @@ void* GetTickets(Mutex mutex, pthread_t tid, unsigned int index)
 	            std::cout<< "Thread-" << index << " | Remaining tickets: " << --cntTickets << std::endl;	
 	        }
 	        else { break; }
-		}//这对 {} 的作用就是避免 LockGuard在 usleep(666) 之后解锁, 
+		}//这对 {} 的作用就是避免 LockGuard在 usleep(666) 之后解锁, 这样会把  usleep(666) 也放到临界区
         usleep(666);
     }
     return nullptr;
@@ -31,11 +32,13 @@ void* GetTickets(Mutex mutex, pthread_t tid, unsigned int index)
 
 int main()
 {
-    // pthread_t tid;
-    // std::vector<pthread_t> tids;
-    // Mutex mtx;
-    
-   
+	Mutex mutex;
+	using TaskFunc = std::function<void*(Mutex, uint)>;
+	for(uint i = 0; i < 5; ++i)
+	{
+		//std::thread thread(GetTickets,mutex,i);
+		Thread<TaskFunc, Mutex> thread(GetTickets, mutex, i);
 
+	}
 }
 	

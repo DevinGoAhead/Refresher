@@ -11,37 +11,43 @@
 
 namespace wxy
 {
-	class Thread;
-	struct ThreadContext
-	{
-		Thread* _cThis;
-		void* _cArg;
-	};
+	template<typename F, typename... Args>
 	class Thread
 	{
 	private:
-		using RoutineFunc = std::function<void*(void*)>;
+		// 根据 一个可调用对象的 *类型*, 和参数类型, 推断返回值类型
+		using ReturnType = std::invoke_result_t<std::decay_t<F>, std::decay_t<Args>...>;
 	public:
 		Thread(const Thread& x) = delete;
 		Thread& operator=(const Thread& x) = delete;
 	public:
-		Thread(RoutineFunc routineFunc, void* arg, unsigned int threadIndex) 
-		: _routineFunc(routineFunc), _context(std::make_unique<ThreadContext>()), _isDetached(false), _isJoined(false)
+		Thread(/*uint threadIndex,*/ F&& func, Args&&... args)
 		{
-			
-			// 将 this 和 arg 放到 ThreadContext 对象中
-			// unique_ptr 可以使用 -> 直接访问成员, 不需要 get() 函数
-			_context->_cArg = arg;
-			_context->_cThis = this;
+			// [ThreadFunc = std::forward<F>(func), ... argsCaptured = std::forward<Args>(args)] #捕获对象列表
+			// ()->ReturnType #lambda 表达式无参, 返回值类型为 ->ReturnType
+			// {func(argsCaptured)} # lambda 表达式的函数体,使用捕获的对象, 将args 传递给可调用对象 ThreadFunc
+			// auto shrPtrTaskFunc = std::make_shared<std::function<ReturnType()>>/*创建一个shared ptr, 指向一个 无参,  返回值类型为 ->ReturnType 的 function 类型的对象 */
+			// (
+			// 	[ThreadFunc = std::forward<F>(func), ... argsCaptured = std::forward<Args>(args)]()->ReturnType
+			// 	{return ThreadFunc(argsCaptured...);}
+			// );
+			 auto shrPtrTaskFunc = std::make_shared<std::function<ReturnType()>>(
+            [func = std::forward<FF>(func), captured_args = std::make_tuple(std::forward<AA>(args)...)]() -> ReturnType {
+                return std::apply(func, captured_args); // 在调用时使用 std::apply 和 std::forward
+            });
 
-			// 这里会调用 StartRoutine,并以  _context.get() 作为参数
-			// c++ 中任何指针都可以隐式转换为 void*, 足够安全, 不需要 显示转换
-			int ret = pthread_create(&_id, nullptr, StartRoutine, _context.get());
-			if(ret != 0) {throw std::runtime_error("Failed to create thread");}
+			// 将 shared_ptr 转换为 void* 并传递给 pthread_create
+			int ret = pthread_create(&_id, nullptr, StartRoutine, static_cast<void*>(shrPtrTaskFunc));
+			if(ret != 0) 
+			{
+				//delete shrPtrTaskFunc;
+				throw std::runtime_error("Failed to create thread");
+			}
 			
 			//设置线程名称
 			std::ostringstream oss;
-			oss << "Thread#" << threadIndex;
+			//oss << "Thread#" << threadIndex;
+			oss << "Thread#" << 1;
 			_name = oss.str();
 		}
 		void Detach()
@@ -62,7 +68,7 @@ namespace wxy
 			int ret = pthread_join(_id, &retval);
 			if (ret != 0) {throw std::runtime_error("Failed to join thread");}
 
-			_isJoined = true;
+			_isJoined == true;
 			return  retval;
 		}
 		std::string& GetName() {return _name;}
@@ -78,18 +84,14 @@ namespace wxy
 
 	private:
 		// 参数只能有void*, 因此 static, 屏蔽 this
-		// 但是, 这样又无法访问 _arg, 故引入类型 ThreadContext
 		static void* StartRoutine(void* arg)
 		{
-			ThreadContext* pThreadCtx = static_cast<ThreadContext*>(arg); // arg 是 void* 类型
-			return pThreadCtx->_cThis->Run(pThreadCtx->_cArg); // 不使用Run, 直接调用 _routineFunc(pThreadCtx->c_arg) 也可以
+			auto shrPtrTaskFunc = static_cast<std::shared_ptr<std::function<ReturnType()>>>(arg); //由 void* 转换为 shared_ptr
+			(*shrPtrTaskFunc)(); // 直接调用 function 对象
+			return nullptr;
 		}
-
-		void* Run(void* arg) {return _routineFunc(arg);}
 	private:
 		pthread_t _id; // Thread id
-		RoutineFunc _routineFunc;
-		std::unique_ptr<ThreadContext> _context;
 		bool _isDetached;
 		bool _isJoined;
 		std::string _name; // Thread name
