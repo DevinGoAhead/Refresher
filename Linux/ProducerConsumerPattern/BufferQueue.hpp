@@ -46,7 +46,7 @@ public:
 	}
 
 	bool Empty() {return _que.empty();}
-	bool Full() {return _que.size() > 4;} // 默认最多存储 5 个任务
+	bool Full() {return _que.size() > maxNum;}
 private:
 	std::queue<T> _que; // 一个公共的缓冲队列, 用于初始任务存取
 	pthread_mutex_t _mutex; // 一把公共锁;
