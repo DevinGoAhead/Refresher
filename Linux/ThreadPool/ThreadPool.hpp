@@ -67,7 +67,7 @@ namespace wxy
 			auto& ThreadCtx = *(*ppThreadCtx);
 			auto& this_ = std::get<0>(ThreadCtx);
 			auto& pThread = std::get<1>(ThreadCtx);
-			//delete ppThreadCtx;
+			delete ppThreadCtx;
 
 			Task task;
 			while(true)

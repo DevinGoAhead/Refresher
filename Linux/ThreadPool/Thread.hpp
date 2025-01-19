@@ -84,7 +84,7 @@ namespace wxy
 			auto ppFunc = static_cast<std::shared_ptr<std::function<void*()>>*>(arg); //由 void* 转换为 shared_ptr*
 			auto& Func = *(*ppFunc);
 			Func(); // 直接调用 function 对象
-			//delete ppFunc;
+			delete ppFunc;
 			return nullptr;
 		}
 	private:
