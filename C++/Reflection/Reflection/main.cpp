@@ -25,9 +25,12 @@ int main() {
 	void(Charactor:: * fPtr_b)(std::string) = &Charactor::SetName;
 	std::string(Charactor:: * fPtr_c)() const = &Charactor::GetName;
 
-	using classType = FunctionTrait<decltype(fPtr_b)>::classType;
-	using retType = FunctionTrait<decltype(fPtr_b)>::retType;
-	using argsType = FunctionTrait<decltype(fPtr_b)>::argsType;
+	using classType_1 = FunctionTrait<decltype(fPtr_b)>::classType;
+	using retType_1 = FunctionTrait<decltype(fPtr_b)>::retType;
+	using argsType_1 = FunctionTrait<decltype(fPtr_b)>::argsType;
+
+	using classType_2 = FunctionTrait<decltype(fPtr_c)>::classType;
+	using retType_2 = FunctionTrait<decltype(fPtr_c)>::retType;
 
 	std::cout << fPtr_b << std::endl;
 }
