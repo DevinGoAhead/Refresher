@@ -10,6 +10,7 @@
 # Precompiled Headers
 *.gch
 *.pch
+*.ipch
 
 # Compiled Dynamic libraries
 *.so
@@ -30,7 +31,63 @@
 *.exe
 *.out
 *.app
+*.iobj
+*.idb
 
-# added by Devin, for vscode
+# Debug/Release build directories
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+
+# Visual Studio specific
+.vs/
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.suo
+*.aps
+*.cache
+*.ncb
+*.opensdf
+*.sdf
+*.db
+*.opendb
+
+# IntelliSense and build logs
+*.tlog
+*.log
+*.ilk
+*.pdb
+*.meta
+
+# NuGet
+[Nn]u[Gg]et/
+*.nupkg
+packages/
+
+# Local History
+.history/
+
+# Local File Cache
+.vs/FileContentIndex/
+
+# 其他中间文件
+*.exp
+*.lib
+*.bsc
+*.mdmp
+
+# 由Devin添加，用于vscode
 build/
-.vscode
+.vscode/
