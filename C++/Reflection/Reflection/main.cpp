@@ -1,36 +1,60 @@
 
-#include "VariableTrait.h"
+#include "FieldTrait.h"
+
 #include <iostream>
+#include <string>
 
-std::string Foo(float args1) { return "abc"; }
+/******************************************************************************************************/
+std::string Foo_1(float args1) { return "abc"; }
 
-class Charactor {
+template<typename T>
+auto Foo_2(T) -> int = delete;
+
+class Character {
 public:
-	void SetName(std::string name) {};
+	void SetName(std::string name) { _name = name; };
 	std::string GetName() const { return "name"; };
+	bool IsHit(const Character& otherCharactor) {
+		return true;
+	}
+private:
+	std::string _name;
+	bool _isMale;
 };
 
+/******************************************************************************************************/
+
+template <typename Ret, typename... Args>
+auto FunctionPointerType(Ret(*)(Args...)) -> Ret(*)(Args...); // 函数声明, 返回值类型与参数类型保持相同
+
+template <typename Class, typename Ret, typename... Args>
+auto FunctionPointerType(Ret(Class::*)(Args...)) -> Ret(Class::*)(Args...);
+
+template <typename Class, typename Ret, typename... Args>
+auto FunctionPointerType(Ret(Class::*)(Args...) const) -> Ret(Class::*)(Args...);
+
+// FunctionPointerType 是一个函数, 确切的说是函数声明
+// auto F, F 是值, auto 可推导确定值的类型, 但本质 F 就是一个值
+// FunctionPointerType(F), 是一个函数调用, 由于只有一个参数, 所以可省略<>,隐式实例化
+// FunctionPointerType(F) 虽然语法上是调用, 但是在 decltype 中并未被真的执行, 只是参与了语义分析
+// FunctionPointType_t 此时是一个类型, 模板类型
+template <auto F>
+using FunctionPointType_t = decltype(FunctionPointerType(F));
+// using FunctionPointType_t = decltype(F); // 理论上直接这样也可以?
+
+
+template <typename T>
+struct TypeInfo {};
+
 int main() {
-	// trait from variable
-	using typeNonPtr = RemovePointer<int*>::type;
-	using typeNonConst = RemoveConst<const int>::type;
+	//auto field = FieldTraits<decltype(&Character::GetName)>{ &Character::GetName };
+	//auto field = FieldTraits{ &Character::GetName };
+	auto field = FieldTraits{ &Foo_1 };
+	std::cout << field.IsMember() << std::endl;
+	std::cout << field.IsConst() << std::endl;
+	std::cout << field.pointer << std::endl;
 
-	// trait from global function
-	std::string(*fPtr_a)(float) = Foo;
-	using typeFunction_1 = FunctionTrait<decltype(fPtr_a)>;
-	using typeFunction_2 = FunctionTrait<decltype(Foo)>;
-
-	// trait from member function
-	// 先了解成员函数指针的结构, 与全局函数的结构对比
-	void(Charactor:: * fPtr_b)(std::string) = &Charactor::SetName;
-	std::string(Charactor:: * fPtr_c)() const = &Charactor::GetName;
-
-	using classType_1 = FunctionTrait<decltype(fPtr_b)>::classType;
-	using retType_1 = FunctionTrait<decltype(fPtr_b)>::retType;
-	using argsType_1 = FunctionTrait<decltype(fPtr_b)>::argsType;
-
-	using classType_2 = FunctionTrait<decltype(fPtr_c)>::classType;
-	using retType_2 = FunctionTrait<decltype(fPtr_c)>::retType;
-
-	std::cout << fPtr_b << std::endl;
+	std::cout << &Character::GetName << std::endl;
+	std::cout << &Character::SetName << std::endl;
+	std::cout << &Character::IsHit << std::endl;
 }
