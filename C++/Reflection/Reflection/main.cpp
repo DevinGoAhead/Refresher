@@ -1,5 +1,5 @@
 
-#include "FieldTrait.h"
+#include "TypeInfo.h"
 
 #include <iostream>
 #include <string>
@@ -42,19 +42,11 @@ template <auto F>
 using FunctionPointType_t = decltype(FunctionPointerType(F));
 // using FunctionPointType_t = decltype(F); // 理论上直接这样也可以?
 
-
-template <typename T>
-struct TypeInfo {};
+BEGIN_CLASS(Character)
+FUCNTIONS(FUNC(&Character::GetName), FUNC(&Character::IsHit), FUNC(&Character::SetName));
+END_CLASS()
 
 int main() {
-	//auto field = FieldTraits<decltype(&Character::GetName)>{ &Character::GetName };
-	//auto field = FieldTraits{ &Character::GetName };
-	auto field = FieldTraits{ &Foo_1 };
-	std::cout << field.IsMember() << std::endl;
-	std::cout << field.IsConst() << std::endl;
-	std::cout << field.pointer << std::endl;
-
-	std::cout << &Character::GetName << std::endl;
-	std::cout << &Character::SetName << std::endl;
-	std::cout << &Character::IsHit << std::endl;
+	auto typeInfo = TypeInfo<Character>();
+	std::cout << std::get<0>(typeInfo.functions).name << std::endl;
 }

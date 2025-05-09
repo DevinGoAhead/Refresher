@@ -2,6 +2,8 @@
 
 #include "FunctionTrait.h"
 #include "VariableTrait.h"
+#include <string>
+#include <tuple>
 
 namespace Detail {
 	template <typename T>
@@ -26,6 +28,7 @@ namespace Internal {
 		constexpr bool IsConst() const { return traitType::isConst; }
 		constexpr bool IsFunction() const { return true; }
 		constexpr bool IsVariable() const { return false; }
+		constexpr size_t argsCount() const { return std::tuple_size_v<typename traitType::argsType>; }
 	};
 
 	template <typename T>
@@ -38,8 +41,11 @@ namespace Internal {
 }
 // VariableTraits 和 FunctionTraits 保存的是类型
 // 这里在 VariableTraits 和 FunctionTraits 的基础上保存函数或变量的指针
+// 新增, 函数名称
 template <typename T>
 struct FieldTraits : public Internal::BasicFieldTraits<T, IsFunction_v<T>> {
-	constexpr FieldTraits(T&& ptr) : pointer(ptr) {}
+	constexpr FieldTraits(T&& ptr, std::string_view nm) : pointer(ptr),  name(nm.substr(1)){}
+
 	T pointer;
+	std::string_view name;
 };
